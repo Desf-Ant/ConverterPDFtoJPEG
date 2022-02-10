@@ -19,6 +19,7 @@ class Ui_MainWindow(object):
 
         self.destLabel = QtWidgets.QLabel("Destination Folder")
         self.destEdit = QtWidgets.QLineEdit()
+        self.destEdit.setReadOnly(True)
 
         self.indexBeginLabel = QtWidgets.QLabel("index begin")
         self.indexEndLabel = QtWidgets.QLabel("index end")
@@ -34,6 +35,7 @@ class Ui_MainWindow(object):
 
         self.fromLabel = QtWidgets.QLabel("From Folder")
         self.fromEdit = QtWidgets.QLineEdit()
+        self.fromEdit.setReadOnly(True)
 
         self.fromPrefixLabel = QtWidgets.QLabel("Image Prefix:")
         self.fromindexBeginLabel = QtWidgets.QLabel("index begin")
@@ -83,8 +85,24 @@ class Ui_MainWindow(object):
 
 
     def initConnect(self) :
-        pass
+        self.destEdit.selectionChanged.connect(self.openFolderDest)
+        self.fromEdit.selectionChanged.connect(self.openFolderFrom)
+        self.convertButton.clicked.connect(self.tapOnConvertButton)
+        self.destEdit.clicked.connect(self.tapOnConvertButton)
 
+
+    def openFolderDest(self) :
+        fname = QtWidgets.QFileDialog.getExistingDirectory()
+        if fname :
+            self.destEdit.setText(fname)
+
+    def openFolderFrom(self) :
+        fname = QtWidgets.QFileDialog.getExistingDirectory()
+        if fname :
+            self.fromEdit.setText(fname)
+
+    def tapOnConvertButton(self) :
+        print("ok")
 
 
 if __name__ == "__main__" :

@@ -15,7 +15,6 @@ class ConverterPDFtoJPEGCore:
         self.fromIndexBegin = 0
         self.fromIndexEnd = 0
         self.destIndexBegin = 0
-        self.pdfs = []
 
     def setView(self, view):
         self.view = view
@@ -56,11 +55,14 @@ class ConverterPDFtoJPEGCore:
     def importPDF(self) :
         dir = os.listdir(self.fromFolder)
         self.view.setValueProgressBar(0,100)
+        j = self.destIndexBegin
 
         if self.fromIndexBegin == self.fromIndexEnd : # si les index de début et de fin sont les memes, importer tous les pdf
             for i, file in enumerate(dir,1) :
                 if file[:len(self.fromPrefix)] == self.fromPrefix and file[-4:] == ".pdf" :
-                    self.pdfs.append(wi(filename=self.fromFolder+"\\"+file, resolution=300).convert("jpeg"))
+                    pdf = wi(filename=self.fromFolder+"\\"+file, resolution=300).convert("jpeg")
+                    print(i)
+                    j = self.convert(pdf.sequence, i)
                     self.view.setValueProgressBar(i,len(dir))
         else :
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
@@ -68,16 +70,16 @@ class ConverterPDFtoJPEGCore:
                     self.view.showAlert(self.fromPrefix+self.reIndex(i)+".pdf is missing")
                     return -1
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
-                self.pdfs.append(wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg"))
+                pdf = wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg")
+                j = self.convert(pdf.sequence, i)
+                self.view.setValueProgressBar(i,len(dir))
 
-        i = self.destIndexBegin
-        for pdf in self.pdfs:
-            for img  in pdf.sequence :
-                page = wi(image=img)
-                page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(i)+".jpg")
-                i +=1
-        self.pdfs = []
-
+    def convert(self, sequence, index) :
+        for img  in sequence :
+            page = wi(image=img)
+            page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg")
+            index +=1
+        return index
 
     def reIndex(self, i) :
         index = str(i)

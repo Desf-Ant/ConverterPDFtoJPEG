@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-from wand.image import Image as wi
+from pdf2image import convert_from_path
+import pdf2image
 import converterPDFtoJPEGView
 import sys
 import os
@@ -64,9 +65,9 @@ class ConverterPDFtoJPEGCore:
         if self.fromIndexBegin == self.fromIndexEnd : # si les index de début et de fin sont les memes, importer tous les pdf
             for i, file in enumerate(self.dir,1) :
                 if file[:len(self.fromPrefix)] == self.fromPrefix and file[-4:] == ".pdf" :
-                    pdf = wi(filename=self.fromFolder+"\\"+file, resolution=300).convert("jpeg")
-                    print(i)
-                    j = self.convertIntoJPG(pdf.sequence, i)
+                    print(self.fromFolder+"\\"+file)
+                    pdf = convert_from_path(self.fromFolder+"\\"+file, dpi=300)
+                    j = self.convertIntoJPG(pdf, i)
                     self.view.setValueProgressBar(i,len(self.dir))
         else :
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
@@ -74,15 +75,17 @@ class ConverterPDFtoJPEGCore:
                     self.view.showAlert(self.fromPrefix+self.reIndex(i)+".pdf is missing")
                     return -1
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
-                pdf = wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg")
-                j = self.convertIntoJPG(pdf.sequence, i)
+                # pdf = wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg")
+                pdf = convert_from_path(self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf", dpi=300)
+                j = self.convertIntoJPG(pdf, i)
                 self.view.setValueProgressBar(i,len(self.dir))
         self.thread.exit()
 
     def convertIntoJPG(self, sequence, index) :
-        for img  in sequence :
-            page = wi(image=img)
-            page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg")
+        for img in sequence :
+            # page = wi(image=img)
+            # page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg")
+            img.save(self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg", "JPEG")
             index +=1
         return index
 

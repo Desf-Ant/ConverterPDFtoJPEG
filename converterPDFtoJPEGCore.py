@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 from wand.image import Image as wi
 import converterPDFtoJPEGView
 import sys
@@ -15,6 +16,7 @@ class ConverterPDFtoJPEGCore:
         self.fromIndexBegin = 0
         self.fromIndexEnd = 0
         self.destIndexBegin = 0
+        self.thread = None
 
     def setView(self, view):
         self.view = view
@@ -50,31 +52,34 @@ class ConverterPDFtoJPEGCore:
         else  : self.startConvertion()
 
     def startConvertion(self) :
-        self.importPDF()
-
-    def importPDF(self) :
-        dir = os.listdir(self.fromFolder)
+        self.dir = os.listdir(self.fromFolder)
         self.view.setValueProgressBar(0,100)
+        self.thread = QtCore.QThread()
+        self.thread.started.connect(self.convert)
+        self.thread.start()
+
+    def convert(self) :
         j = self.destIndexBegin
 
         if self.fromIndexBegin == self.fromIndexEnd : # si les index de début et de fin sont les memes, importer tous les pdf
-            for i, file in enumerate(dir,1) :
+            for i, file in enumerate(self.dir,1) :
                 if file[:len(self.fromPrefix)] == self.fromPrefix and file[-4:] == ".pdf" :
                     pdf = wi(filename=self.fromFolder+"\\"+file, resolution=300).convert("jpeg")
                     print(i)
-                    j = self.convert(pdf.sequence, i)
-                    self.view.setValueProgressBar(i,len(dir))
+                    j = self.convertIntoJPG(pdf.sequence, i)
+                    self.view.setValueProgressBar(i,len(self.dir))
         else :
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
-                if self.fromPrefix+self.reIndex(i)+".pdf" not in dir :
+                if self.fromPrefix+self.reIndex(i)+".pdf" not in self.dir :
                     self.view.showAlert(self.fromPrefix+self.reIndex(i)+".pdf is missing")
                     return -1
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
                 pdf = wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg")
-                j = self.convert(pdf.sequence, i)
-                self.view.setValueProgressBar(i,len(dir))
+                j = self.convertIntoJPG(pdf.sequence, i)
+                self.view.setValueProgressBar(i,len(self.dir))
+        self.thread.exit()
 
-    def convert(self, sequence, index) :
+    def convertIntoJPG(self, sequence, index) :
         for img  in sequence :
             page = wi(image=img)
             page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg")

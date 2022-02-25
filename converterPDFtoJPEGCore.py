@@ -75,7 +75,6 @@ class ConverterPDFtoJPEGCore:
                     self.view.showAlert(self.fromPrefix+self.reIndex(i)+".pdf is missing")
                     return -1
             for i in range(self.fromIndexBegin, self.fromIndexEnd+1) :
-                # pdf = wi(filename=self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf").convert("jpeg")
                 pdf = convert_from_path(self.fromFolder+"\\"+self.fromPrefix+self.reIndex(i)+".pdf", dpi=300)
                 j = self.convertIntoJPG(pdf, i)
                 self.view.setValueProgressBar(i,len(self.dir))
@@ -83,8 +82,6 @@ class ConverterPDFtoJPEGCore:
 
     def convertIntoJPG(self, sequence, index) :
         for img in sequence :
-            # page = wi(image=img)
-            # page.save(filename=self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg")
             img.save(self.destFolder+"\\"+self.destPrefix+self.reIndex(index)+".jpg", "JPEG")
             index +=1
         return index
